@@ -86,16 +86,45 @@ def calc_all_default(df):
 
 # UTILITIS FUNCTIONS
 
+def directional_accuracy(y_true, y_pred, plot=True):
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+    
+    true_diff = np.diff(y_true)
+    pred_diff = np.diff(y_pred)
+
+    true_dir = np.sign(true_diff)
+    pred_dir = np.sign(pred_diff)
+
+    correct = np.sum(true_dir == pred_dir)
+    total = len(true_dir)
+    
+    if plot:
+        plt.figure(figsize=(12, 4))
+        plt.plot(true_dir, label='Direzione Reale', marker='o')
+        plt.plot(pred_dir, label='Direzione Predetta', marker='x')
+        plt.title('Confronto Direzione Reale vs Predetta')
+        plt.xlabel('Indice')
+        plt.ylabel('Direzione (-1 = ↓, 0 = =, 1 = ↑)')
+        plt.legend()
+        plt.grid(True)
+        plt.tight_layout()
+        plt.show()
+
+    return correct / total * 100
+
 def model_scores(y_true, y_pred, verbose=True):
     mae = mean_absolute_error(y_true, y_pred)
     rmse = mean_squared_error(y_true, y_pred, squared=False)
     mape = np.mean(np.abs((np.array(y_true) - np.array(y_pred)) / np.clip(np.array(y_true), 1e-8, None))) * 100
+    da = directional_accuracy(y_true, y_pred, plot=False)
     r2 = r2_score(y_true, y_pred)
 
     results = {
         'MAE': mae, # Mean Absolute Error
         'RMSE': rmse, # Root Mean Squared Error
         'MAPE (%)': mape, # Mean Absolute Percentage Error
+        'DA': da, # Directional Accuracy
         'R²': r2 # R2 Score
     }
 
