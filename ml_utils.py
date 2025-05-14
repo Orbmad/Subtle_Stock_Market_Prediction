@@ -296,13 +296,12 @@ def forecast_autoregressive(model, initial_window, n_steps):
     return np.array(predictions)
 
 def next_weekday_encoding(sin_val, cos_val):
-    # Calcola l'angolo corrente (in radianti)
     angle = np.arctan2(sin_val, cos_val)
-    # Incrementa l'angolo di 2π / 7 per passare al giorno successivo
+
     next_angle = angle + (2 * np.pi / 7)
-    # Normalizza l'angolo tra -π e π
+
     next_angle = (next_angle + np.pi) % (2 * np.pi) - np.pi
-    # Calcola la nuova coppia sin e cos
+
     next_sin = np.sin(next_angle)
     next_cos = np.cos(next_angle)
     return next_sin, next_cos
