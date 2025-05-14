@@ -5,6 +5,7 @@ import pandas_ta as ta
 
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import RobustScaler
+from sklearn.compose import ColumnTransformer
 
 import tensorflow as tf
 from tensorflow.keras.models import Sequential # type: ignore
@@ -135,11 +136,19 @@ def train_test_split_timeWindows(input, target, window_size=10, train_size_pct=0
     return X_train, X_test, y_train, y_test, input_size, train_size
 
 class Data_Robust_Scaler:
-    def __init__(self, input, target):
+    def __init__(self, input, target, features_to_ignore=[]):
         self.input = input.copy()
         self.target = target.copy()
         
-        X_scaler = RobustScaler()
+        features_to_scale = [f for f in self.input.columns if f not in features_to_ignore]
+        
+        X_scaler = ColumnTransformer(
+            transformers=[
+                ('scaler', RobustScaler(), features_to_scale),
+                ('passthrough', 'passthrough', features_to_ignore)
+            ]
+        )
+        
         y_scaler = RobustScaler()
         
         scaled_X = X_scaler.fit_transform(input)
@@ -168,6 +177,15 @@ class Data_Robust_Scaler:
         self.test_results = test_results
         
         return train_results, test_results
+    
+    def get_test_results_with_forecast(self, scaled_forecast):
+        forecast_window = len(scaled_forecast)
+        forecast = self.inverse_scale_output(scaled_forecast)
+        self.test_results['forecast'] = pd.NA
+        self.test_results['forecast'].iloc[:forecast_window] = (
+            forecast.reshape(forecast_window,)
+        )
+        return self.test_results
     
     def print_scores(self):
         print("Train-Set Score")
@@ -289,13 +307,25 @@ def next_weekday_encoding(sin_val, cos_val):
     next_cos = np.cos(next_angle)
     return next_sin, next_cos
 
+WEEKDAY_ENCODINGS = [
+    (np.sin(2 * np.pi * i / 7), np.cos(2 * np.pi * i / 7))
+    for i in range(7)
+]
+
+def next_weekday_encoding_by_lookup(sin_val, cos_val, tol=1e-8, encoding=WEEKDAY_ENCODINGS):
+    for i, (s, c) in enumerate(encoding):
+        if np.isclose(sin_val, s, atol=tol) and np.isclose(cos_val, c, atol=tol):
+            next_index = (i + 1) % 7  # torna a lunedì dopo domenica
+            return WEEKDAY_ENCODINGS[next_index]
+    raise ValueError("Coppia (sin, cos) non riconosciuta come giorno valido.")
+
 def forecast_autoregressive_circularDayEncription(model, initial_window, n_steps):
     window = initial_window
     predictions = []
 
     for _ in range(n_steps):
         next_pred = model.predict(window)[0] #Single prediction
-        next_sin, next_cos = next_weekday_encoding(window[0][-1][1], window[0][-1][2])
+        next_sin, next_cos = next_weekday_encoding_by_lookup(window[0][-1][1], window[0][-1][2])
         new_elem = [next_pred[0], next_sin, next_cos]
         # print(new_elem)
         # print(next_pred)
