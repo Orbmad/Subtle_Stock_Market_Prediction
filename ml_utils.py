@@ -6,6 +6,7 @@ import pandas_ta as ta
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import RobustScaler
 from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import FunctionTransformer
 
 import tensorflow as tf
 from tensorflow.keras.models import Sequential # type: ignore
@@ -164,8 +165,21 @@ def train_test_split_timeWindows(input, target, window_size=10, train_size_pct=0
     y_train, y_test = y[0:train_size], y[train_size:]
     return X_train, X_test, y_train, y_test, input_size, train_size
 
+class DummyScaler:
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X):
+        return np.array(X)
+    
+    def fit_transform(self, X):
+        return np.array(X)
+    
+    def inverse_transform(self, X):
+        return np.array(X)
+
 class Data_Robust_Scaler:
-    def __init__(self, input, target, features_to_ignore=[]):
+    def __init__(self, input, target, features_to_ignore=[], dummy_scaler_for_target=False):
         self.input = input.copy()
         self.target = target.copy()
         
@@ -178,7 +192,10 @@ class Data_Robust_Scaler:
             ]
         )
         
-        y_scaler = RobustScaler()
+        if dummy_scaler_for_target:
+            y_scaler = DummyScaler()
+        else:
+            y_scaler = RobustScaler()
         
         scaled_X = X_scaler.fit_transform(input)
         scaled_y = y_scaler.fit_transform(target)
@@ -226,7 +243,7 @@ class Data_Robust_Scaler:
         plot_predictions(self.target, self.train_results['pred'], self.test_results['pred'], title=title, figsize=figsize)
         
 class LSTMModel:
-    def __init__(self, input_shape, lstm_units = [100, 50], dense_units = [25], activation='relu', dropout=0.2):
+    def __init__(self, input_shape, lstm_units = [100, 50], dense_units = [25], activation='relu', dropout=0.2, binary_classification=False):
         model = Sequential()
     
         # First LSTM layer
@@ -236,7 +253,7 @@ class LSTMModel:
             model.add(Dropout(dropout))
         
         for u in lstm_units[1:]:
-            rs = (u != lstm_units[-1]) #return_sequences is False in the lasr LSTM layer.
+            rs = (u != lstm_units[-1]) #return_sequences is False in the last LSTM layer.
             model.add(LSTM(units=u, return_sequences=rs))
             if (dropout):
                 model.add(Dropout(dropout))
@@ -244,9 +261,15 @@ class LSTMModel:
         for d in dense_units:
             model.add(Dense(units=d, activation=activation))
             
-        model.add(Dense(units=1))
+        if binary_classification:
+            model.add(Dense(units=1, activation='sigmoid')) # Binary output
+        else:
+            model.add(Dense(units=1))
         
-        model.compile(optimizer='adam', loss='mean_squared_error')
+        if binary_classification:
+            model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        else:
+            model.compile(optimizer='adam', loss='mean_squared_error')
         
         #Saving the model
         self.model = model
