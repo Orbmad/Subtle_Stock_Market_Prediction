@@ -1,0 +1,149 @@
+LSTM MODELS:
+
+--- APPLE PREDICTION ---
+1.
+    window_size = 5
+    lstm_units = [100, 50]
+    dense_units = [25]
+    dropout = 0.1
+    epochs = 50
+    batch_size = 16
+    set_early_stopping = True
+
+    Test-Set Score:
+    MAE: 6.6031
+    RMSE: 7.9834
+    MAPE (%): 3.4716
+    R²: 0.9239
+
+2.
+    window_size = 3
+    lstm_units = [100, 50]
+    dense_units = [25]
+    dropout = 0.1
+    epochs = 50
+    batch_size = 16
+    set_early_stopping = True
+
+    Test-Set Score:
+    MAE: 6.3610
+    RMSE: 8.7613
+    MAPE (%): 3.1540
+    R²: 0.9083
+
+3. LOOK AT THIS!!!
+    window_size = 10
+    lstm_units = [100, 100]
+    dense_units = [50]
+    dropout = 0.1
+    epochs = 50
+    batch_size = 16
+    set_early_stopping = True
+
+    Test-Set Score:
+    MAE: 5.7974
+    RMSE: 8.6331
+    MAPE (%): 2.8223
+    R²: 0.9108
+
+4. 
+    window_size = 10
+    lstm_units = [100, 100]
+    dense_units = [50]
+    dropout = 0.05
+    epochs = 50
+    batch_size = 16
+    set_early_stopping = True
+
+    Test-Set Score:
+    MAE: 5.2834
+    RMSE: 7.6772
+    MAPE (%): 2.6042
+    R²: 0.9295
+
+5. BEST ONE!!!(Few Tries)
+    window_size = 5
+    lstm_units = [100, 100]
+    dense_units = [50]
+    dropout = 0
+    epochs = 100
+    batch_size = 8
+    set_early_stopping = True
+
+    Test-Set Score:
+    MAE: 4.9581
+    RMSE: 7.2362
+    MAPE (%): 2.4074
+    R²: 0.9375
+
+6. BRUTTA STORIA!!!
+    window_size = 5
+    lstm_units = [100, 100]
+    dense_units = [50]
+    dropout = 0
+    epochs = 100
+    batch_size = 8
+    set_early_stopping = True
+
+    FEATURES:
+    input = df[['Close', 'week_day_num']]
+
+    Test-Set Score
+    MAE: 1.9373
+    RMSE: 2.6276
+    MAPE (%): 1.0422
+    R²: 0.9918
+
+7. BRUTTA STORIA!!!
+    window_size = 5
+    lstm_units = [100, 100]
+    dense_units = [50]
+    dropout = 0
+    epochs = 100
+    batch_size = 8
+    set_early_stopping = True
+
+    FEATURES:
+    input = df[['Close']]
+
+    Test-Set Score
+    MAE: 1.9294
+    RMSE: 2.6081
+    MAPE (%): 1.0391
+    R²: 0.9919
+
+8. IL MIGLIORE PURTROPPO!!!
+    window_size = 10
+    lstm_units = [100, 100]
+    dense_units = [50]
+    dropout = 0
+    epochs = 50
+    batch_size = 8
+    set_early_stopping = True
+
+    FEATURES:
+    input = df[['Close']]
+
+    Test-Set Score
+    MAE: 1.9191
+    RMSE: 2.5933
+    MAPE (%): 1.0317
+    R²: 0.9920
+
+9. ANCORA MEGLIO CON ENCODING DEI GIORNI!!!
+    window_size = 10
+    lstm_units = [100, 100]
+    dense_units = [50]
+    dropout = 0
+    epochs = 50
+    batch_size = 8
+    set_early_stopping = True
+
+    FEATURES:
+    input = df[['Close', 'weekday_sin', 'weekday_cos']]
+
+    Test-Set Score:
+    MAE: 1.5308
+    RMSE: 2.2433
+    MAPE (%): 0.8094
+    R²: 0.9940
