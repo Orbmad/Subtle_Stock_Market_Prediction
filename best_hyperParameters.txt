@@ -1,6 +1,6 @@
 LSTM MODELS:
 
---- APPLE PREDICTION ---
+--- APPLE PREDICTION --- FAILURE?
 1.
     window_size = 5
     lstm_units = [100, 50]
