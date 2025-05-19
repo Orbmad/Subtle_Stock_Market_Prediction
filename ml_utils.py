@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pandas_ta as ta
 
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, root_mean_squared_error
 from sklearn.preprocessing import RobustScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import FunctionTransformer
