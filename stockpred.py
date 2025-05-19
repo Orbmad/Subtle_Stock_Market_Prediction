@@ -33,11 +33,11 @@ def directional_accuracy(y_true, y_pred, plot=True):
     
     if plot:
         plt.figure(figsize=(12, 4))
-        plt.plot(true_dir, label='Direzione Reale', marker='o')
-        plt.plot(pred_dir, label='Direzione Predetta', marker='x')
-        plt.title('Confronto Direzione Reale vs Predetta')
-        plt.xlabel('Indice')
-        plt.ylabel('Direzione (-1 = ↓, 0 = =, 1 = ↑)')
+        plt.plot(true_dir, label='Real Direction', marker='o')
+        plt.plot(pred_dir, label='Predicted Direction', marker='x')
+        plt.title('Real Direction vs Predicted Direction')
+        plt.xlabel('Index')
+        plt.ylabel('Direction (-1 = ↓, 0 = =, 1 = ↑)')
         plt.legend()
         plt.grid(True)
         plt.tight_layout()
@@ -317,3 +317,46 @@ class LSTMClassifier:
         plt.legend()
         plt.grid(True)
         plt.show()
+        
+class RandomModel:
+    def __init__(self, target):
+        self.mean = target.mean()
+        self.std = target.std()
+        self.len = len(target)
+
+    def random_predictions(self, len=None):
+        if len is None:
+            len = self.len
+        rand_preds = np.random.normal(
+            self.mean,
+            self.std,
+            len
+        )
+        return rand_preds
+       
+# TRADING UTILS
+
+def gain(open_df, C, C_pred):
+    O = open_df.reindex_like(C)
+    CO_diff = C - O
+    growth = C_pred > O
+    decline = C_pred < O
+    return CO_diff[growth].sum() - CO_diff[decline].sum()
+
+def roi(open_df, C, C_pred):
+    mean_open = open_df.reindex_like(C).mean()
+    return gain(C, C_pred) / mean_open
+
+def print_eval(X, y, model):
+    preds = model.predict(X)
+    print("Gain: {:.2f}$".format(gain(y, preds)))
+    print(" ROI: {:.3%}".format(roi(y, preds)))
+    
+def dir_gain(delta_true_df, dir_pred):
+    growth = dir_pred == 1
+    decline = dir_pred == 0
+    return delta_true_df[growth].sum() - delta_true_df[decline].sum()
+
+def dir_roi(open_df, delta_true_df, dir_pred):
+    mean_open = open_df.reindex_like(delta_true_df).mean()
+    return gain(delta_true_df, dir_pred) / mean_open
